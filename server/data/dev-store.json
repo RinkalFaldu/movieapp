@@ -1,0 +1,31 @@
+{
+  "users": [
+    {
+      "id": "906925ac-69ea-4b05-83d6-a9f1579b8421",
+      "name": "abcd",
+      "email": "abcd@gmail.com",
+      "passwordHash": "$2b$10$X6KNC6cv6oRrB/zNJLgU8Ongd8J34EsP8y2Ni5R6AutHRIpGOb7z6",
+      "shareId": "5ab484ae-0"
+    }
+  ],
+  "favorites": [
+    {
+      "userId": "906925ac-69ea-4b05-83d6-a9f1579b8421",
+      "movieId": "atlas-2049",
+      "movie": {
+        "id": "atlas-2049",
+        "title": "Atlas 2049",
+        "overview": "A defiant courier races across a neon megacity carrying the one memory chip that can reboot the planet's failing atmosphere grid.",
+        "poster": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80",
+        "backdrop": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+        "rating": "8.6",
+        "releaseDate": "2026-01-14",
+        "genre": [
+          "Action",
+          "Sci-Fi"
+        ],
+        "trailer": "https://www.youtube.com/embed/B4x4Rk4cKJg"
+      }
+    }
+  ]
+}
