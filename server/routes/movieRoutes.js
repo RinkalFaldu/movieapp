@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  getGenreFeed,
   getHomeFeed,
   getMovieDetails,
   search,
@@ -9,6 +10,7 @@ const router = Router();
 
 router.get("/home", getHomeFeed);
 router.get("/search", search);
+router.get("/genre/:genreKey", getGenreFeed);
 router.get("/:movieId", getMovieDetails);
 
 export default router;

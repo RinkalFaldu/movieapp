@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { addFavorite, fetchFavorites, removeFavorite } from "../api/favoriteApi.js";
-import { fetchMovieDetails, fetchHomeFeed, searchMovies } from "../api/movieApi.js";
+import {
+  fetchGenreMovies,
+  fetchMovieDetails,
+  fetchHomeFeed,
+  searchMovies,
+} from "../api/movieApi.js";
 import GenreSidebar from "../components/GenreSidebar.jsx";
 import MovieModal from "../components/MovieModal.jsx";
 import MovieRow from "../components/MovieRow.jsx";
@@ -18,6 +23,8 @@ export default function HomePage() {
   const [message, setMessage] = useState("");
   const [activeGenre, setActiveGenre] = useState("");
   const [authPrompt, setAuthPrompt] = useState("");
+  const [genrePagination, setGenrePagination] = useState({});
+  const [loadingMoreGenre, setLoadingMoreGenre] = useState(false);
 
   useEffect(() => {
     async function loadPage() {
@@ -28,6 +35,14 @@ export default function HomePage() {
         ]);
         setRows(home.rows);
         setFavorites(favoriteResponse.favorites);
+        setGenrePagination(
+          Object.fromEntries(
+            home.rows.map((row) => [
+              row.key,
+              { nextPage: row.nextPage ?? null, hasMore: Boolean(row.hasMore) },
+            ]),
+          ),
+        );
       } catch (error) {
         setMessage(error.message);
       } finally {
@@ -74,6 +89,9 @@ export default function HomePage() {
         ]
       : rows;
 
+  const activeGenrePaging = activeGenre ? genrePagination[activeGenre] : null;
+  const canLoadMoreGenreMovies = Boolean(activeRow && activeGenrePaging?.hasMore);
+
   function handleSelectGenre(genreKey) {
     setQuery("");
     setSearchResults([]);
@@ -102,6 +120,44 @@ export default function HomePage() {
       ? await removeFavorite(token, movie.id)
       : await addFavorite(token, movie);
     setFavorites(response.favorites);
+  }
+
+  async function loadMoreGenreMovies() {
+    if (!activeGenre || !activeGenrePaging?.nextPage || loadingMoreGenre) {
+      return;
+    }
+
+    setLoadingMoreGenre(true);
+    try {
+      const response = await fetchGenreMovies(activeGenre, activeGenrePaging.nextPage);
+      setRows((currentRows) =>
+        currentRows.map((row) => {
+          if (row.key !== activeGenre) {
+            return row;
+          }
+
+          const knownIds = new Set(row.movies.map((movie) => movie.id));
+          const appendedMovies = response.movies.filter((movie) => !knownIds.has(movie.id));
+          return {
+            ...row,
+            movies: [...row.movies, ...appendedMovies],
+            nextPage: response.nextPage,
+            hasMore: response.hasMore,
+          };
+        }),
+      );
+      setGenrePagination((current) => ({
+        ...current,
+        [activeGenre]: {
+          nextPage: response.nextPage ?? null,
+          hasMore: Boolean(response.hasMore),
+        },
+      }));
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setLoadingMoreGenre(false);
+    }
   }
 
   if (loading) {
@@ -216,6 +272,16 @@ export default function HomePage() {
                 layout={!searchResults.length && activeGenre ? "grid" : "strip"}
               />
             ))}
+            {!searchResults.length && activeGenre && canLoadMoreGenreMovies ? (
+              <div className="load-more-wrap">
+                <button
+                  className="primary-button load-more-button"
+                  onClick={loadMoreGenreMovies}
+                >
+                  {loadingMoreGenre ? "Loading..." : "Load more movies"}
+                </button>
+              </div>
+            ) : null}
           </div>
         </section>
       </div>

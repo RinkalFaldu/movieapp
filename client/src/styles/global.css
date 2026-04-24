@@ -292,6 +292,16 @@ img {
   padding: 0.7rem 1rem;
 }
 
+.load-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.75rem;
+}
+
+.load-more-button {
+  min-width: 220px;
+}
+
 .movie-row {
   margin-top: 1rem;
 }

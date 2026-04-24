@@ -66,18 +66,28 @@ async function fetchTmdb(endpoint) {
   return response.json();
 }
 
+function getFallbackRowByKey(genreKey) {
+  return curatedRows.find((row) => row.key === genreKey) || null;
+}
+
 export async function getHomeRows() {
   try {
     const tmdbRows = await Promise.all(
       curatedRows.map(async (row) => {
         const payload = await fetchTmdb(`/discover/movie?with_genres=${row.genreId}`);
         if (!payload?.results?.length) {
-          return row;
+          return {
+            ...row,
+            nextPage: null,
+            hasMore: false,
+          };
         }
 
         return {
           ...row,
-          movies: payload.results.slice(0, 12).map(normalizeMovie),
+          movies: payload.results.map(normalizeMovie),
+          nextPage: payload.page < payload.total_pages ? payload.page + 1 : null,
+          hasMore: payload.page < payload.total_pages,
         };
       }),
     );
@@ -86,6 +96,42 @@ export async function getHomeRows() {
   } catch {
     return curatedRows;
   }
+}
+
+export async function getGenreMovies(genreKey, page = 1) {
+  const row = getFallbackRowByKey(genreKey);
+  if (!row) {
+    return null;
+  }
+
+  try {
+    const payload = await fetchTmdb(`/discover/movie?with_genres=${row.genreId}&page=${page}`);
+    if (payload?.results?.length) {
+      return {
+        key: row.key,
+        title: row.title,
+        movies: payload.results.map(normalizeMovie),
+        nextPage: payload.page < payload.total_pages ? payload.page + 1 : null,
+        hasMore: payload.page < payload.total_pages,
+      };
+    }
+  } catch {
+    return {
+      key: row.key,
+      title: row.title,
+      movies: row.movies,
+      nextPage: null,
+      hasMore: false,
+    };
+  }
+
+  return {
+    key: row.key,
+    title: row.title,
+    movies: row.movies,
+    nextPage: null,
+    hasMore: false,
+  };
 }
 
 export async function searchMovies(query) {
