@@ -21,7 +21,10 @@ app.use(
         "http://localhost:5173",
       ].filter(Boolean);
 
-      if (!origin || allowedOrigins.includes(origin)) {
+      const isVercelOrigin =
+        typeof origin === "string" && origin.endsWith(".vercel.app");
+
+      if (!origin || allowedOrigins.includes(origin) || isVercelOrigin) {
         callback(null, true);
         return;
       }
