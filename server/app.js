@@ -9,7 +9,7 @@ import { errorHandler, notFoundHandler } from "./middleware/errorMiddleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const distDir = path.resolve(__dirname, "../dist");
+const clientBuildDir = path.resolve(__dirname, "../public");
 
 const app = express();
 
@@ -29,10 +29,10 @@ app.use("/api/auth", authRoutes);
 app.use("/api/movies", movieRoutes);
 app.use("/api/favorites", favoriteRoutes);
 
-app.use(express.static(distDir));
+app.use(express.static(clientBuildDir));
 
 app.get(/^(?!\/api).*/, (_req, res, next) => {
-  res.sendFile(path.join(distDir, "index.html"), (error) => {
+  res.sendFile(path.join(clientBuildDir, "index.html"), (error) => {
     if (error) {
       next();
     }
